@@ -1,0 +1,2 @@
+# infoversetrends
+Daily trends bot
