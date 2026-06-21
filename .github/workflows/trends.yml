@@ -1,1 +1,4 @@
-name: Trends Bot
+name: Daily Trends
+
+on:
+  workflow_dispatch:
