@@ -4,56 +4,53 @@ import feedparser
 TOKEN = "8763023216:AAGTxJFJD2dnMtBHirSdx_fMhpyszuOkmS0"
 CHAT_ID = "7330431242"
 
-try:
-    arabic_feeds = [
-        "https://arabic.cnn.com/rss",
-        "https://www.aljazeera.net/aljazeerarss/ar",
-    ]
+feeds = [
+    "https://feeds.bbci.co.uk/news/rss.xml",
+    "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+    "https://www.aljazeera.net/aljazeerarss/ar",
+    "https://arabic.cnn.com/rss"
+]
 
-    english_feeds = [
-        "https://feeds.bbci.co.uk/news/rss.xml",
-        "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-    ]
+topics = []
 
-    arabic_topics = []
-    english_topics = []
-
-    for feed in arabic_feeds:
+for feed in feeds:
+    try:
         data = feedparser.parse(feed)
-        for entry in data.entries[:5]:
-            title = entry.title.strip()
-            if title not in arabic_topics:
-                arabic_topics.append(title)
 
-    for feed in english_feeds:
-        data = feedparser.parse(feed)
-        for entry in data.entries[:5]:
-            title = entry.title.strip()
-            if title not in english_topics:
-                english_topics.append(title)
+        for item in data.entries[:10]:
+            title = item.title.strip()
 
-    arabic_topics = arabic_topics[:5]
-    english_topics = english_topics[:5]
+            if title not in topics:
+                topics.append(title)
 
-    message = "🔥 الترندات اليومية\n\n"
+    except:
+        pass
 
-    message += "🇸🇦 5 مواضيع عربية:\n"
-    for i, topic in enumerate(arabic_topics, 1):
-        message += f"{i}- {topic}\n"
+arabic = []
+english = []
 
-    message += "\n🌍 5 مواضيع إنجليزية:\n"
-    for i, topic in enumerate(english_topics, 1):
-        message += f"{i}- {topic}\n"
+for topic in topics:
+    if any('\u0600' <= c <= '\u06FF' for c in topic):
+        arabic.append(topic)
+    else:
+        english.append(topic)
 
-    requests.post(
-        f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-        data={
-            "chat_id": CHAT_ID,
-            "text": message
-        }
-    )
+message = "🔥 الترندات اليومية\n\n"
 
-    print("Topics sent successfully")
+message += "🇸🇦 5 مواضيع عربية:\n"
+for i, t in enumerate(arabic[:5], 1):
+    message += f"{i}- {t}\n"
 
-except Exception as e:
-    print(e)
+message += "\n🌍 5 مواضيع إنجليزية:\n"
+for i, t in enumerate(english[:5], 1):
+    message += f"{i}- {t}\n"
+
+requests.post(
+    f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+    data={
+        "chat_id": CHAT_ID,
+        "text": message
+    }
+)
+
+print("Done")
