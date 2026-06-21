@@ -4,53 +4,56 @@ import feedparser
 TOKEN = "8763023216:AAGTxJFJD2dnMtBHirSdx_fMhpyszuOkmS0"
 CHAT_ID = "7330431242"
 
-feeds = {
-    "عربي": "https://news.google.com/rss?hl=ar&gl=SA&ceid=SA:ar",
-    "AI": "https://news.google.com/rss/search?q=AI&hl=en-US&gl=US&ceid=US:en",
-    "Tech": "https://news.google.com/rss/search?q=Technology&hl=en-US&gl=US&ceid=US:en",
-    "Gaming": "https://news.google.com/rss/search?q=Gaming&hl=en-US&gl=US&ceid=US:en",
-    "Business": "https://news.google.com/rss/search?q=Business&hl=en-US&gl=US&ceid=US:en",
-}
-
 try:
-    msg = "🔥 الترندات اليومية\n\n"
+    arabic_feeds = [
+        "https://arabic.cnn.com/rss",
+        "https://www.aljazeera.net/aljazeerarss/ar",
+    ]
 
-    # عربي
-    ar = feedparser.parse(feeds["عربي"])
-    msg += "🇸🇦 5 مواضيع عربية:\n"
+    english_feeds = [
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+    ]
 
-    for i, item in enumerate(ar.entries[:5], 1):
-        title = item.title.split(" - ")[0]
-        msg += f"{i}- {title}\n"
-
-    msg += "\n🌍 5 مواضيع إنجليزية:\n"
-
+    arabic_topics = []
     english_topics = []
 
-    for category in ["AI", "Tech", "Gaming", "Business"]:
-        feed = feedparser.parse(feeds[category])
+    for feed in arabic_feeds:
+        data = feedparser.parse(feed)
+        for entry in data.entries[:5]:
+            title = entry.title.strip()
+            if title not in arabic_topics:
+                arabic_topics.append(title)
 
-        if len(feed.entries) > 0:
-            english_topics.append(feed.entries[0].title.split(" - ")[0])
+    for feed in english_feeds:
+        data = feedparser.parse(feed)
+        for entry in data.entries[:5]:
+            title = entry.title.strip()
+            if title not in english_topics:
+                english_topics.append(title)
 
-    # نجيب موضوع إضافي من AI
-    extra = feedparser.parse(feeds["AI"])
+    arabic_topics = arabic_topics[:5]
+    english_topics = english_topics[:5]
 
-    if len(extra.entries) > 1:
-        english_topics.append(extra.entries[1].title.split(" - ")[0])
+    message = "🔥 الترندات اليومية\n\n"
 
-    for i, topic in enumerate(english_topics[:5], 1):
-        msg += f"{i}- {topic}\n"
+    message += "🇸🇦 5 مواضيع عربية:\n"
+    for i, topic in enumerate(arabic_topics, 1):
+        message += f"{i}- {topic}\n"
+
+    message += "\n🌍 5 مواضيع إنجليزية:\n"
+    for i, topic in enumerate(english_topics, 1):
+        message += f"{i}- {topic}\n"
 
     requests.post(
         f"https://api.telegram.org/bot{TOKEN}/sendMessage",
         data={
             "chat_id": CHAT_ID,
-            "text": msg
+            "text": message
         }
     )
 
-    print("Trends sent successfully")
+    print("Topics sent successfully")
 
 except Exception as e:
     print(e)
