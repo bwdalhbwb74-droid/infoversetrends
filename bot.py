@@ -207,6 +207,7 @@ def send_daily_topics():
 
 
 schedule.every().day.at("02:00").do(send_daily_topics)
+send_daily_topics()
 
 while True:
     schedule.run_pending()
