@@ -9,6 +9,9 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 USED_FILE = "used_topics.json"
+TOPICS_FILE = "topics.json"
+
+
 def load_used():
     if os.path.exists(USED_FILE):
         try:
@@ -17,23 +20,54 @@ def load_used():
         except:
             return []
     return []
+
+
 def save_used(data):
     with open(USED_FILE, "w", encoding="utf-8") as f:
         json.dump(data[-100:], f, ensure_ascii=False)
+
+
+def load_topics():
+    if os.path.exists(TOPICS_FILE):
+        try:
+            with open(TOPICS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+
+    return {
+        "today": [],
+        "history": []
+    }
+
+
+def save_topics(data):
+    with open(TOPICS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 def get_topic(sources, used_topics):
     for source in sources:
         try:
             feed = feedparser.parse(source)
+
             for entry in feed.entries:
                 title = entry.title.strip()
+
                 if title in used_topics:
                     continue
+
                 used_topics.append(title)
                 save_used(used_topics)
+
                 return title
+
         except:
             pass
+
     return "لم يتم العثور على موضوع اليوم"
+
+
 arabic_categories = {
     "🤖 الذكاء الاصطناعي": [
         "https://aitnews.com/feed/",
@@ -71,6 +105,7 @@ arabic_categories = {
         "https://blog.khanacademy.org/feed/"
     ]
 }
+
 english_categories = {
     "🤖 AI": [
         "https://techcrunch.com/category/artificial-intelligence/feed/",
@@ -108,21 +143,58 @@ english_categories = {
         "https://www.topgear.com/rss.xml"
     ]
 }
+
+
 def send_daily_topics():
     used_topics = load_used()
+
+    topics_data = load_topics()
+    topics_data["today"] = []
+
     message = "🔥 مواضيع اليوم للمقالات\n\n"
+
     message += "🇸🇦 5 مواضيع عربية\n\n"
+
     counter = 1
+
     for category, feeds in arabic_categories.items():
         topic = get_topic(feeds, used_topics)
+
+        item = {
+            "number": counter,
+            "language": "ar",
+            "category": category,
+            "title": topic
+        }
+
+        topics_data["today"].append(item)
+        topics_data["history"].append(item)
+
         message += f"{counter}- {category}\n{topic}\n\n"
+
         counter += 1
+
     message += "🌍 5 مواضيع إنجليزية\n\n"
-    counter = 1
+
     for category, feeds in english_categories.items():
         topic = get_topic(feeds, used_topics)
+
+        item = {
+            "number": counter,
+            "language": "en",
+            "category": category,
+            "title": topic
+        }
+
+        topics_data["today"].append(item)
+        topics_data["history"].append(item)
+
         message += f"{counter}- {category}\n{topic}\n\n"
+
         counter += 1
+
+    save_topics(topics_data)
+
     requests.post(
         f"https://api.telegram.org/bot{TOKEN}/sendMessage",
         data={
@@ -130,8 +202,12 @@ def send_daily_topics():
             "text": message[:4000]
         }
     )
+
     print("Topics Sent")
+
+
 schedule.every().day.at("02:00").do(send_daily_topics)
+
 while True:
     schedule.run_pending()
     time.sleep(60)
