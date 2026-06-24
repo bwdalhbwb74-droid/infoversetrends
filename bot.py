@@ -4,8 +4,10 @@ import json
 import os
 import schedule
 import time
-TOKEN = "حط_التوكن_هنا"
-CHAT_ID = "7330431242"
+
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+
 USED_FILE = "used_topics.json"
 def load_used():
     if os.path.exists(USED_FILE):
