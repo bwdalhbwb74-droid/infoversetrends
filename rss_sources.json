@@ -1,1 +1,93 @@
+{
+  "arabic": {
+    "🤖 الذكاء الاصطناعي": [
+      "https://aitnews.com/feed/",
+      "https://www.tech-wd.com/wd/feed/",
+      "https://www.unlimit-tech.com/feed/",
+      "https://www.arabapps.org/feed/",
+      "https://www.ngmisr.com/feed/"
+    ],
 
+    "📱 التقنية والجوالات": [
+      "https://www.unlimit-tech.com/feed/",
+      "https://www.tech-wd.com/wd/feed/",
+      "https://www.androidauthority.com/feed/",
+      "https://www.gsmarena.com/rss-news-reviews.php3",
+      "https://arstechnica.com/feed/"
+    ],
+
+    "💰 المال والاستثمار": [
+      "https://www.investing.com/rss/news.rss",
+      "https://www.kitco.com/rss/news",
+      "https://finance.yahoo.com/rss/",
+      "https://feeds.feedburner.com/entrepreneur/latest",
+      "https://www.forbes.com/advisor/feed/"
+    ],
+
+    "✈️ السفر والهجرة": [
+      "https://www.travelandleisure.com/rss",
+      "https://www.lonelyplanet.com/news/rss",
+      "https://rss.nytimes.com/services/xml/rss/nyt/Travel.xml",
+      "https://visaguide.world/feed/",
+      "https://www.schengenvisainfo.com/feed/"
+    ],
+
+    "🎓 التعليم والمهارات": [
+      "https://www.edutopia.org/rss.xml",
+      "https://www.coursera.org/articles/rss",
+      "https://www.edsurge.com/news.rss",
+      "https://www.futurelearn.com/info/blog/feed",
+      "https://blog.khanacademy.org/feed/"
+    ],
+
+    "🚗 السيارات": [
+      "https://www.motortrend.com/feed/",
+      "https://www.autoblog.com/rss.xml",
+      "https://www.caranddriver.com/rss/all.xml/",
+      "https://insideevs.com/rss/news/",
+      "https://www.topgear.com/rss.xml"
+    ]
+  },
+
+  "english": {
+    "🤖 AI": [
+      "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "https://venturebeat.com/category/ai/feed/",
+      "https://www.marktechpost.com/feed/",
+      "https://analyticsindiamag.com/feed/",
+      "https://www.artificialintelligence-news.com/feed/"
+    ],
+
+    "📱 Technology": [
+      "https://www.theverge.com/rss/index.xml",
+      "https://techcrunch.com/feed/",
+      "https://www.androidauthority.com/feed/",
+      "https://www.gsmarena.com/rss-news-reviews.php3",
+      "https://arstechnica.com/feed/"
+    ],
+
+    "💰 Finance": [
+      "https://finance.yahoo.com/rss/",
+      "https://www.investing.com/rss/news.rss",
+      "https://www.marketwatch.com/rss/topstories",
+      "https://feeds.feedburner.com/entrepreneur/latest",
+      "https://www.forbes.com/advisor/feed/"
+    ],
+
+    "🎮 Gaming": [
+      "https://www.ign.com/rss",
+      "https://feeds.feedburner.com/Kotaku",
+      "https://www.gamespot.com/feeds/mashup/",
+      "https://www.pcgamer.com/rss/",
+      "https://www.eurogamer.net/feed"
+    ],
+
+    "🚗 Automotive": [
+      "https://www.motortrend.com/feed/",
+      "https://www.autoblog.com/rss.xml",
+      "https://www.caranddriver.com/rss/all.xml/",
+      "https://insideevs.com/rss/news/",
+      "https://www.topgear.com/rss.xml"
+    ]
+  }
+}
