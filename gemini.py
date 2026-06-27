@@ -87,7 +87,7 @@ Requirements:
 - Return JSON only.
 
 """
-   # ==========================================
+# ==========================================
 # GENERATE ARTICLE
 # ==========================================
 
@@ -103,27 +103,46 @@ def generate_article(topic):
 
         text = response.text.strip()
 
-        # إزالة ```json إذا أضافها Gemini
+        # إزالة Markdown إذا أضافه Gemini
 
-        if text.startswith("```json"):
-            text = text[7:]
+        text = text.replace(
+            "```json",
+            ""
+        )
 
-        if text.startswith("```"):
-            text = text[3:]
-
-        if text.endswith("```"):
-            text = text[:-3]
+        text = text.replace(
+            "```",
+            ""
+        )
 
         text = text.strip()
 
-        return json.loads(text)
+        start = text.find("{")
+        end = text.rfind("}")
+
+        if start == -1 or end == -1:
+
+            raise Exception(
+                "JSON not found."
+            )
+
+        json_text = text[start:end + 1]
+
+        article = json.loads(
+            json_text
+        )
+
+        return article
 
     except Exception as e:
 
+        print("=" * 50)
         print("Gemini Error")
         print(e)
+        print("=" * 50)
 
         return None
+
 # ==========================================
 # PUBLIC FUNCTION
 # ==========================================
