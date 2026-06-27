@@ -1,7 +1,4 @@
 import json
-import re
-
-import feedparser
 
 from config import (
     TOPICS_FILE,
@@ -11,6 +8,13 @@ from config import (
 from storage import (
     load_json,
     save_json,
+)
+
+from providers import (
+    clean_text,
+    is_arabic,
+    is_english,
+    fetch_category,
 )
 
 # ==========================================
@@ -34,6 +38,7 @@ def save_used_topics(data):
 
 
 def load_topics():
+
     return load_json(
         TOPICS_FILE,
         {
@@ -45,22 +50,13 @@ def load_topics():
 
 
 def save_topics(data):
+
     save_json(TOPICS_FILE, data)
-    # ==========================================
-# TEXT HELPERS
+
+
 # ==========================================
-
-def clean_text(text):
-
-    if not text:
-        return ""
-
-    text = re.sub(r"<[^>]+>", "", text)
-    text = text.replace("\n", " ")
-    text = text.replace("\r", " ")
-
-    return " ".join(text.split())
-
+# TITLE HELPERS
+# ==========================================
 
 def normalize_title(title):
 
@@ -68,81 +64,6 @@ def normalize_title(title):
 
 
 # ==========================================
-# LANGUAGE DETECTION
-# ==========================================
-
-def is_arabic(text):
-
-    for c in text:
-        if "\u0600" <= c <= "\u06FF":
-            return True
-
-    return False
-
-
-def is_english(text):
-
-    letters = 0
-    english = 0
-
-    for c in text:
-
-        if c.isalpha():
-
-            letters += 1
-
-            if "a" <= c.lower() <= "z":
-                english += 1
-
-    if letters == 0:
-        return False
-
-    return (english / letters) >= 0.6
-
-
-# ==========================================
-# FETCH RSS
-# ==========================================
-
-def fetch_feed(feed_url):
-
-    news = []
-
-    try:
-
-        feed = feedparser.parse(feed_url)
-
-        if getattr(feed, "bozo", False):
-            print(f"RSS Failed: {feed_url}")
-            return []
-
-        for entry in feed.entries[:20]:
-
-            title = clean_text(entry.get("title", ""))
-
-            if not title:
-                continue
-
-            summary = clean_text(
-                entry.get("summary", "")
-                or entry.get("description", "")
-            )
-
-            news.append({
-                "title": title,
-                "summary": summary,
-                "link": entry.get("link", ""),
-                "published": entry.get("published", ""),
-                "source": feed_url
-            })
-
-    except Exception as e:
-
-        print(f"RSS Error: {feed_url}")
-        print(e)
-
-    return news
-    # ==========================================
 # SCORE
 # ==========================================
 
@@ -196,9 +117,7 @@ def calculate_score(item):
             score += 10
 
     return score
-
-
-# ==========================================
+  # ==========================================
 # FILTER NEWS
 # ==========================================
 
@@ -215,12 +134,10 @@ def filter_news(news, used_topics, language):
 
     for item in news:
 
-        title = clean_text(item["title"])
+        title = clean_text(item.get("title", ""))
 
         if not title:
             continue
-
-        # فلترة اللغة
 
         if language == "ar":
 
@@ -247,7 +164,7 @@ def filter_news(news, used_topics, language):
 
         item["title"] = title
         item["summary"] = clean_text(
-            item["summary"]
+            item.get("summary", "")
         )
 
         item["score"] = calculate_score(item)
@@ -260,19 +177,19 @@ def filter_news(news, used_topics, language):
     )
 
     return filtered
-    # ==========================================
+
+
+# ==========================================
 # SELECT BEST TOPIC
 # ==========================================
 
 def get_best_topic(category_name, feeds, used_topics, language):
 
-    all_news = []
+    all_news = fetch_category(
+        feeds,
+        language
+    )
 
-    # جمع الأخبار من جميع المصادر
-    for feed in feeds:
-        all_news.extend(fetch_feed(feed))
-
-    # فلترة الأخبار
     filtered = filter_news(
         all_news,
         used_topics,
@@ -293,11 +210,7 @@ def get_best_topic(category_name, feeds, used_topics, language):
             "language": language
         }
 
-    # أخذ أفضل 5 أخبار
-    top_news = filtered[:5]
-
-    # اختيار أعلى Score
-    best = max(top_news, key=lambda x: x["score"])
+    best = filtered[0]
 
     return {
         "category": category_name,
@@ -310,7 +223,6 @@ def get_best_topic(category_name, feeds, used_topics, language):
         "number": 0,
         "language": language
     }
-
 # ==========================================
 # BUILD TODAY TOPICS
 # ==========================================
@@ -327,17 +239,16 @@ def build_today_topics():
     for category, feeds in RSS_SOURCES["arabic"].items():
 
         topic = get_best_topic(
-            category,
-            feeds,
-            used_topics,
-            "ar"
+            category_name=category,
+            feeds=feeds,
+            used_topics=used_topics,
+            language="ar"
         )
 
         topic["number"] = number
 
         topics.append(topic)
 
-        # لا نحفظ الرسائل الوهمية
         if topic["title"] != "لا يوجد موضوع مناسب اليوم":
             used_topics.append(topic["title"])
 
@@ -347,10 +258,10 @@ def build_today_topics():
     for category, feeds in RSS_SOURCES["english"].items():
 
         topic = get_best_topic(
-            category,
-            feeds,
-            used_topics,
-            "en"
+            category_name=category,
+            feeds=feeds,
+            used_topics=used_topics,
+            language="en"
         )
 
         topic["number"] = number
@@ -364,11 +275,15 @@ def build_today_topics():
 
     save_used_topics(used_topics)
 
-    data = {
-        "date": "",
-        "today": topics,
-        "history": topics
-    }
+    data = load_topics()
+
+    data["date"] = ""
+    data["today"] = topics
+
+    if "history" not in data:
+        data["history"] = []
+
+    data["history"].extend(topics)
 
     save_topics(data)
 
@@ -408,11 +323,12 @@ def build_telegram_message(topics):
         )
 
     message += (
-        "━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━━━\n"
         "✍️ أرسل رقم الموضوع (1-11) لكتابة المقال."
     )
 
     return message
+
 
 # ==========================================
 # PUBLIC FUNCTION
