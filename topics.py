@@ -235,30 +235,32 @@ def get_best_topic(category_name, feeds, used_topics):
             "score": 0
         }
 
-        best = filtered[0]
+        candidates = filtered[:5]
 
-    candidates = []
-
-    for item in filtered[:5]:
-        candidates.append({
-            "title": item["title"],
-            "summary": item["summary"],
-            "link": item["link"],
-            "published": item["published"],
-            "source": item["source"],
-            "score": item["score"]
-        })
-
+if not candidates:
     return {
         "category": category_name,
-        "title": best["title"],
-        "summary": best["summary"],
-        "link": best["link"],
-        "published": best["published"],
-        "source": best["source"],
-        "score": best["score"],
-        "candidates": candidates
+        "title": "لم يتم العثور على موضوع مناسب",
+        "summary": "",
+        "link": "",
+        "published": "",
+        "source": "",
+        "score": 0,
+        "candidates": []
     }
+
+best = candidates[0]
+
+return {
+    "category": category_name,
+    "title": best["title"],
+    "summary": best["summary"],
+    "link": best["link"],
+    "published": best["published"],
+    "source": best["source"],
+    "score": best["score"],
+    "candidates": candidates
+}
 
 
 # ==========================================
