@@ -1,3 +1,4 @@
+import time
 import json
 import google.generativeai as genai
 
@@ -142,24 +143,30 @@ def generate_article(topic):
         print("=" * 50)
 
         return None
-
 # ==========================================
 # PUBLIC FUNCTION
 # ==========================================
 
 def create_article(topic):
 
-    article = generate_article(topic)
+    for attempt in range(3):
 
-    if article is None:
+        article = generate_article(topic)
 
-        return {
-            "success": False,
-            "error": "Gemini failed."
-        }
+        if article is not None:
+
+            return {
+                "success": True,
+                "data": article
+            }
+
+        print(
+            f"Retry {attempt + 1}/3..."
+        )
+
+        time.sleep(2)
 
     return {
-        "success": True,
-        "data": article
+        "success": False,
+        "error": "Failed to generate article."
     }
-    
