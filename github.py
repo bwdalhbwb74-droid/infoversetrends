@@ -122,4 +122,3 @@ def publish_article(article):
     )
 
     return success
-  
