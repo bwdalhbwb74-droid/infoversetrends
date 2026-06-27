@@ -1,18 +1,17 @@
-import feedparser
 import json
 import re
-from datetime import datetime, timezone
+
+import feedparser
 
 from config import (
     TOPICS_FILE,
-    USED_TOPICS_FILE
+    USED_TOPICS_FILE,
 )
 
 from storage import (
     load_json,
-    save_json
+    save_json,
 )
-
 
 # ==========================================
 # LOAD RSS SOURCES
@@ -23,7 +22,7 @@ with open("rss_sources.json", "r", encoding="utf-8") as f:
 
 
 # ==========================================
-# LOAD USED TOPICS
+# STORAGE
 # ==========================================
 
 def load_used_topics():
@@ -34,23 +33,20 @@ def save_used_topics(data):
     save_json(USED_TOPICS_FILE, data[-300:])
 
 
-# ==========================================
-# LOAD TODAY TOPICS
-# ==========================================
-
 def load_topics():
-    return load_json(TOPICS_FILE, {
-        "date": "",
-        "today": [],
-        "history": []
-    })
+    return load_json(
+        TOPICS_FILE,
+        {
+            "date": "",
+            "today": [],
+            "history": []
+        }
+    )
 
 
 def save_topics(data):
     save_json(TOPICS_FILE, data)
-
-
-# ==========================================
+    # ==========================================
 # TEXT HELPERS
 # ==========================================
 
@@ -68,11 +64,44 @@ def clean_text(text):
 
 def normalize_title(title):
 
-    title = clean_text(title)
+    return clean_text(title).lower()
 
-    return title.lower()
-  # ==========================================
-# FETCH NEWS
+
+# ==========================================
+# LANGUAGE DETECTION
+# ==========================================
+
+def is_arabic(text):
+
+    for c in text:
+        if "\u0600" <= c <= "\u06FF":
+            return True
+
+    return False
+
+
+def is_english(text):
+
+    letters = 0
+    english = 0
+
+    for c in text:
+
+        if c.isalpha():
+
+            letters += 1
+
+            if "a" <= c.lower() <= "z":
+                english += 1
+
+    if letters == 0:
+        return False
+
+    return (english / letters) >= 0.6
+
+
+# ==========================================
+# FETCH RSS
 # ==========================================
 
 def fetch_feed(feed_url):
@@ -80,62 +109,63 @@ def fetch_feed(feed_url):
     news = []
 
     try:
+
         feed = feedparser.parse(feed_url)
 
         for entry in feed.entries[:20]:
 
-            title = clean_text(entry.get("title", ""))
-
-            summary = clean_text(
-                entry.get("summary", "")
-                or entry.get("description", "")
-            )
-
-            link = entry.get("link", "")
-
-            published = entry.get("published", "")
-
-            if not title:
-                continue
-
             news.append({
-                "title": title,
-                "summary": summary,
-                "link": link,
-                "published": published,
+
+                "title": clean_text(
+                    entry.get("title", "")
+                ),
+
+                "summary": clean_text(
+                    entry.get("summary", "")
+                    or entry.get("description", "")
+                ),
+
+                "link": entry.get("link", ""),
+
+                "published": entry.get(
+                    "published",
+                    ""
+                ),
+
                 "source": feed_url
+
             })
 
     except Exception as e:
-        print(f"RSS Error: {feed_url} -> {e}")
+
+        print(f"RSS Error: {feed_url}")
+        print(e)
 
     return news
-
-
-# ==========================================
+    # ==========================================
 # SCORE
 # ==========================================
 
 GOOD_WORDS = [
-    "new",
-    "launch",
-    "official",
-    "update",
-    "release",
+
     "ai",
     "gpt",
+    "openai",
     "google",
     "apple",
     "microsoft",
     "tesla",
-    "سامسونج",
+    "samsung",
+
+    "ذكاء",
     "جوجل",
     "آبل",
-    "ذكاء",
-    "رسمي",
-    "إطلاق",
+    "سامسونج",
     "تحديث",
+    "إطلاق",
+    "رسمي",
     "جديد"
+
 ]
 
 
@@ -146,56 +176,79 @@ def calculate_score(item):
     title = item["title"]
     summary = item["summary"]
 
-    title_length = len(title)
-
-    # مناسب للسيو
-    if 40 <= title_length <= 90:
+    if 40 <= len(title) <= 90:
         score += 25
 
-    # ملخص جيد
     if len(summary) >= 120:
         score += 20
 
-    # يحتوي أرقام
     if any(c.isdigit() for c in title):
         score += 10
 
-    # كلمات قوية
-    for word in GOOD_WORDS:
-        if word.lower() in title.lower():
-            score += 10
-
-    # وجود رابط
     if item["link"]:
         score += 5
+
+    title_lower = title.lower()
+
+    for word in GOOD_WORDS:
+
+        if word.lower() in title_lower:
+            score += 10
 
     return score
 
 
 # ==========================================
-# FILTER
+# FILTER NEWS
 # ==========================================
 
-def filter_news(news, used_topics):
+def filter_news(news, used_topics, language):
 
     filtered = []
 
     seen = set()
 
+    used = {
+        normalize_title(title)
+        for title in used_topics
+    }
+
     for item in news:
 
-        title = normalize_title(item["title"])
+        title = clean_text(item["title"])
 
-        if title in seen:
+        if not title:
             continue
 
-        seen.add(title)
+        # فلترة اللغة
 
-        if title in [normalize_title(x) for x in used_topics]:
+        if language == "ar":
+
+            if not is_arabic(title):
+                continue
+
+        else:
+
+            if not is_english(title):
+                continue
+
+        normalized = normalize_title(title)
+
+        if normalized in seen:
             continue
 
-        if len(item["title"]) < 25:
+        if normalized in used:
             continue
+
+        seen.add(normalized)
+
+        if len(title) < 25:
+            continue
+
+        item["title"] = title
+        item["summary"] = clean_text(
+            item["summary"]
+        )
 
         item["score"] = calculate_score(item)
 
@@ -207,28 +260,31 @@ def filter_news(news, used_topics):
     )
 
     return filtered
-  # ==========================================
-# SELECT BEST NEWS
+    # ==========================================
+# SELECT BEST TOPIC
 # ==========================================
 
-# ==========================================
-# SELECT BEST NEWS
-# ==========================================
-
-def get_best_topic(category_name, feeds, used_topics):
+def get_best_topic(category_name, feeds, used_topics, language):
 
     all_news = []
 
     # جمع الأخبار من جميع المصادر
     for feed in feeds:
-        news = fetch_feed(feed)
-        all_news.extend(news)
 
-    # تنظيف وترتيب الأخبار
-    filtered = filter_news(all_news, used_topics)
+        all_news.extend(
+            fetch_feed(feed)
+        )
 
-    # إذا لم يوجد أي خبر مناسب
+    # فلترة الأخبار
+    filtered = filter_news(
+        all_news,
+        used_topics,
+        language
+    )
+
+    # لا يوجد خبر مناسب
     if not filtered:
+
         return {
             "category": category_name,
             "title": "لم يتم العثور على موضوع مناسب",
@@ -237,35 +293,24 @@ def get_best_topic(category_name, feeds, used_topics):
             "published": "",
             "source": "",
             "score": 0,
-            "candidates": []
+            "number": 0,
+            "language": language
         }
 
-    # أفضل خبر
     best = filtered[0]
-
-    # أفضل 5 أخبار
-    candidates = []
-
-    for item in filtered[:5]:
-        candidates.append({
-            "title": item.get("title", ""),
-            "summary": item.get("summary", ""),
-            "link": item.get("link", ""),
-            "published": item.get("published", ""),
-            "source": item.get("source", ""),
-            "score": item.get("score", 0)
-        })
 
     return {
         "category": category_name,
-        "title": best.get("title", ""),
-        "summary": best.get("summary", ""),
-        "link": best.get("link", ""),
-        "published": best.get("published", ""),
-        "source": best.get("source", ""),
-        "score": best.get("score", 0),
-        "candidates": candidates
+        "title": best["title"],
+        "summary": best["summary"],
+        "link": best["link"],
+        "published": best["published"],
+        "source": best["source"],
+        "score": best["score"],
+        "number": 0,
+        "language": language
     }
+
 
 # ==========================================
 # BUILD TODAY TOPICS
@@ -285,15 +330,17 @@ def build_today_topics():
         topic = get_best_topic(
             category,
             feeds,
-            used_topics
+            used_topics,
+            "ar"
         )
 
         topic["number"] = number
-        topic["language"] = "ar"
 
         topics.append(topic)
 
-        used_topics.append(topic["title"])
+        used_topics.append(
+            topic["title"]
+        )
 
         number += 1
 
@@ -303,31 +350,34 @@ def build_today_topics():
         topic = get_best_topic(
             category,
             feeds,
-            used_topics
+            used_topics,
+            "en"
         )
 
         topic["number"] = number
-        topic["language"] = "en"
 
         topics.append(topic)
 
-        used_topics.append(topic["title"])
+        used_topics.append(
+            topic["title"]
+        )
 
         number += 1
 
-    save_used_topics(used_topics)
+    save_used_topics(
+        used_topics
+    )
 
-    data = load_topics()
-
-    data["today"] = topics
-
-    data["history"].extend(topics)
+    data = {
+        "today": topics,
+        "history": topics
+    }
 
     save_topics(data)
 
     return topics
-  # ==========================================
-# FORMAT TELEGRAM MESSAGE
+    # ==========================================
+# BUILD TELEGRAM MESSAGE
 # ==========================================
 
 def build_telegram_message(topics):
@@ -342,8 +392,8 @@ def build_telegram_message(topics):
             continue
 
         message += (
-            f'{topic["number"]}. {topic["category"]}\n'
-            f'{topic["title"]}\n\n'
+            f"{topic['number']}. {topic['category']}\n"
+            f"{topic['title']}\n\n"
         )
 
     message += "🌍 المواضيع الإنجليزية\n\n"
@@ -354,8 +404,8 @@ def build_telegram_message(topics):
             continue
 
         message += (
-            f'{topic["number"]}. {topic["category"]}\n'
-            f'{topic["title"]}\n\n'
+            f"{topic['number']}. {topic['category']}\n"
+            f"{topic['title']}\n\n"
         )
 
     return message.strip()
@@ -372,36 +422,3 @@ def generate_daily_topics():
     message = build_telegram_message(topics)
 
     return topics, message
-
-
-# ==========================================
-# FUTURE PROVIDERS
-# ==========================================
-
-"""
-Future Sources
-
-- RSS
-- Google Trends
-- Reddit
-- Hacker News
-- Product Hunt
-- GitHub Trending
-- X (Twitter) Trends
-
-Each provider will return the same structure:
-
-[
-    {
-        "title": "...",
-        "summary": "...",
-        "link": "...",
-        "published": "...",
-        "source": "...",
-        "score": 95
-    }
-]
-
-This allows adding new providers without changing
-the selection logic.
-"""
