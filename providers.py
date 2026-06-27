@@ -16,7 +16,40 @@ def clean_text(text):
     text = text.replace("\r", " ")
 
     return " ".join(text.split())
+
+
 # ==========================================
+# LANGUAGE DETECTION
+# ==========================================
+
+def is_arabic(text):
+
+    for c in text:
+        if "\u0600" <= c <= "\u06FF":
+            return True
+
+    return False
+
+
+def is_english(text):
+
+    letters = 0
+    english = 0
+
+    for c in text:
+
+        if c.isalpha():
+
+            letters += 1
+
+            if "a" <= c.lower() <= "z":
+                english += 1
+
+    if letters == 0:
+        return False
+
+    return (english / letters) >= 0.6
+    # ==========================================
 # RSS PROVIDER
 # ==========================================
 
@@ -45,7 +78,7 @@ def fetch_rss(feed_url, limit=20):
                 or entry.get("description", "")
             )
 
-            news.append({
+            item = {
 
                 "title": title,
 
@@ -65,18 +98,21 @@ def fetch_rss(feed_url, limit=20):
 
                 "provider": "rss"
 
-            })
+            }
+
+            news.append(item)
 
     except Exception as e:
 
+        print(f"RSS ERROR: {feed_url}")
         print(e)
 
     return news
     # ==========================================
-# FETCH CATEGORY RSS
+# FETCH CATEGORY
 # ==========================================
 
-def fetch_category(feeds, limit_per_feed=20):
+def fetch_category(feeds, language, limit_per_feed=20):
 
     all_news = []
 
@@ -87,13 +123,27 @@ def fetch_category(feeds, limit_per_feed=20):
             limit_per_feed
         )
 
-        all_news.extend(news)
+        for item in news:
+
+            title = item["title"]
+
+            if language == "ar":
+
+                if not is_arabic(title):
+                    continue
+
+            else:
+
+                if not is_english(title):
+                    continue
+
+            all_news.append(item)
 
     return all_news
 
 
 # ==========================================
-# FETCH ALL RSS
+# FETCH ALL CATEGORIES
 # ==========================================
 
 def fetch_all_categories(rss_sources):
@@ -103,14 +153,18 @@ def fetch_all_categories(rss_sources):
         "english": {}
     }
 
-    # Arabic
     for category, feeds in rss_sources["arabic"].items():
 
-        data["arabic"][category] = fetch_category(feeds)
+        data["arabic"][category] = fetch_category(
+            feeds,
+            "ar"
+        )
 
-    # English
     for category, feeds in rss_sources["english"].items():
 
-        data["english"][category] = fetch_category(feeds)
+        data["english"][category] = fetch_category(
+            feeds,
+            "en"
+        )
 
     return data
