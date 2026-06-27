@@ -390,7 +390,8 @@ def build_telegram_message(topics):
 
         message += (
             f"{topic['number']}. {topic['category']}\n"
-            f"{topic['title']}\n\n"
+            f"📰 {topic['title']}\n"
+            f"⭐ Score: {topic['score']}\n\n"
         )
 
     message += "🌍 المواضيع الإنجليزية\n\n"
@@ -402,11 +403,16 @@ def build_telegram_message(topics):
 
         message += (
             f"{topic['number']}. {topic['category']}\n"
-            f"{topic['title']}\n\n"
+            f"📰 {topic['title']}\n"
+            f"⭐ Score: {topic['score']}\n\n"
         )
 
-    return message.strip()
+    message += (
+        "━━━━━━━━━━━━━━\n"
+        "✍️ أرسل رقم الموضوع (1-11) لكتابة المقال."
+    )
 
+    return message
 
 # ==========================================
 # PUBLIC FUNCTION
