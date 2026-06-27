@@ -29,6 +29,10 @@ from gemini import (
     create_article,
 )
 
+from github import (
+    publish_article,
+)
+
 # ==========================================
 # CREATE APPLICATION
 # ==========================================
@@ -44,7 +48,9 @@ application = (
 # ==========================================
 
 TODAY_TOPICS = []
+
 LAST_ARTICLE = None
+
 # ==========================================
 # SEND DAILY TOPICS
 # ==========================================
@@ -64,7 +70,6 @@ async def send_daily_topics(
 
     print("✅ Daily topics sent.")
 
-
 # ==========================================
 # START COMMAND
 # ==========================================
@@ -78,7 +83,6 @@ async def start_command(
         "🤖 InfoVerse Hub\n\n"
         "أرسل رقم الموضوع لبدء كتابة المقال."
     )
-
 
 # ==========================================
 # STARTUP
@@ -113,7 +117,7 @@ async def post_init(
     )
 
     print("✅ JobQueue Started")
-    # ==========================================
+ # ==========================================
 # RECEIVE USER MESSAGE
 # ==========================================
 
@@ -129,9 +133,9 @@ async def receive_message(
 
     text = update.message.text.strip()
 
-    # ==========================
+    # ==========================================
     # SELECT TOPIC
-    # ==========================
+    # ==========================================
 
     if text.isdigit():
 
@@ -175,9 +179,7 @@ async def receive_message(
             "قد يستغرق ذلك دقيقة أو دقيقتين."
         )
 
-        result = create_article(
-            selected
-        )
+        result = create_article(selected)
 
         if not result["success"]:
 
@@ -192,103 +194,101 @@ async def receive_message(
         LAST_ARTICLE = article
 
         await update.message.reply_text(
-    f"✅ تم إنشاء المقال.\n\n"
-    f"📌 {article['title']}\n\n"
-    f"📝 {article['meta_description']}"
-)
+            f"✅ تم إنشاء المقال.\n\n"
+            f"📌 {article['title']}\n\n"
+            f"📝 {article['meta_description']}"
+        )
 
-article_text = article["article"]
+        article_text = article["article"]
 
-MAX_LENGTH = 3500
+        MAX_LENGTH = 3500
 
-for i in range(0, len(article_text), MAX_LENGTH):
+        for i in range(
+            0,
+            len(article_text),
+            MAX_LENGTH
+        ):
 
-    part = article_text[i:i + MAX_LENGTH]
+            part = article_text[
+                i:i + MAX_LENGTH
+            ]
 
-    await update.message.reply_text(part)
-
-await update.message.reply_text(
-    "━━━━━━━━━━━━━━━━━━\n\n"
-    "✅ انتهى إرسال المقال.\n\n"
-    "اكتب:\n"
-    "📤 انشر\n"
-    "✏️ عدل"
-)
-
-
-        return
-        # ==========================================
-# FUTURE COMMANDS
-# ==========================================
-
-async def publish_command(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
-    global LAST_ARTICLE
-
-    if LAST_ARTICLE is None:
+            await update.message.reply_text(
+                part
+            )
 
         await update.message.reply_text(
-            "❌ لا يوجد مقال للنشر."
+            "━━━━━━━━━━━━━━━━━━\n\n"
+            "✅ انتهى إرسال المقال.\n\n"
+            "اكتب:\n"
+            "📤 انشر\n"
+            "✏️ عدل"
         )
 
         return
-
-    await update.message.reply_text(
-        "🚧 سيتم ربط النشر مع GitHub في المرحلة القادمة."
-    )
-
-
-async def edit_command(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
-    global LAST_ARTICLE
-
-    if LAST_ARTICLE is None:
-
-        await update.message.reply_text(
-            "❌ لا يوجد مقال لتعديله."
-        )
-
-        return
-
-    await update.message.reply_text(
-        "🚧 سيتم ربط التعديل مع Gemini في المرحلة القادمة."
-    )
-
-
 # ==========================================
-# TEXT COMMANDS
+# PUBLISH / EDIT COMMANDS
 # ==========================================
 
     if text.lower() == "انشر":
 
-        await publish_command(
-            update,
-            context
+        if LAST_ARTICLE is None:
+
+            await update.message.reply_text(
+                "❌ لا يوجد مقال للنشر."
+            )
+
+            return
+
+        await update.message.reply_text(
+            "🚀 جاري النشر على GitHub..."
         )
 
+        success = publish_article(
+            LAST_ARTICLE
+        )
+
+        if success:
+
+            slug = LAST_ARTICLE["slug"]
+
+            await update.message.reply_text(
+                "✅ تم نشر المقال بنجاح.\n\n"
+                f"📄 articles/{slug}.html"
+            )
+
+        else:
+
+            await update.message.reply_text(
+                "❌ فشل النشر على GitHub."
+            )
+
         return
+
+    # ==========================================
 
     if text.lower() == "عدل":
 
-        await edit_command(
-            update,
-            context
+        if LAST_ARTICLE is None:
+
+            await update.message.reply_text(
+                "❌ لا يوجد مقال لتعديله."
+            )
+
+            return
+
+        await update.message.reply_text(
+            "✏️ ميزة التعديل سيتم إضافتها قريبًا."
         )
 
         return
 
+    # ==========================================
+
     await update.message.reply_text(
-        "❌ أرسل رقم الموضوع."
+        "❌ أرسل رقم موضوع أو اكتب (انشر)."
     )
-
-
-# ==========================================
+    # ==========================================
 # HANDLERS
 # ==========================================
 
@@ -305,7 +305,6 @@ application.add_handler(
         receive_message
     )
 )
-
 
 # ==========================================
 # MAIN
