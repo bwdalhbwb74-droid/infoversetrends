@@ -112,28 +112,28 @@ def fetch_feed(feed_url):
 
         feed = feedparser.parse(feed_url)
 
+        if getattr(feed, "bozo", False):
+            print(f"RSS Failed: {feed_url}")
+            return []
+
         for entry in feed.entries[:20]:
 
+            title = clean_text(entry.get("title", ""))
+
+            if not title:
+                continue
+
+            summary = clean_text(
+                entry.get("summary", "")
+                or entry.get("description", "")
+            )
+
             news.append({
-
-                "title": clean_text(
-                    entry.get("title", "")
-                ),
-
-                "summary": clean_text(
-                    entry.get("summary", "")
-                    or entry.get("description", "")
-                ),
-
+                "title": title,
+                "summary": summary,
                 "link": entry.get("link", ""),
-
-                "published": entry.get(
-                    "published",
-                    ""
-                ),
-
+                "published": entry.get("published", ""),
                 "source": feed_url
-
             })
 
     except Exception as e:
