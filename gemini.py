@@ -26,9 +26,9 @@ def build_prompt(topic):
     if language == "ar":
 
         return f"""
-أنت كاتب محتوى SEO محترف.
+أنت كاتب محتوى SEO عالمي وخبير في كتابة المقالات المتوافقة مع Google.
 
-اكتب مقالًا عربيًا احترافيًا بناءً على المعلومات التالية.
+اعتمد على المعلومات التالية فقط لفهم الموضوع، ولا تنسخها حرفياً.
 
 العنوان:
 {topic["title"]}
@@ -42,26 +42,57 @@ def build_prompt(topic):
 الرابط:
 {topic["link"]}
 
-المطلوب:
+========================
 
-- عنوان SEO احترافي.
-- Meta Description.
-- Slug باللغة الإنجليزية.
-- مقال بين 1500 و2500 كلمة.
-- مقدمة.
-- عناوين H2 و H3.
-- خاتمة.
-- FAQ.
-- لا تنسخ من المصدر.
-- اكتب بأسلوب طبيعي وسهل.
-- أرجع النتيجة بصيغة JSON فقط.
+اكتب مقالاً عربياً احترافياً وفريداً 100%.
 
+الشروط:
+
+- لا تذكر أنك ذكاء اصطناعي.
+- لا تذكر أنك اعتمدت على مصدر.
+- لا تنسخ أي فقرة.
+- اكتب بأسلوب بشري.
+- اجعل المقال مناسباً لمحركات البحث.
+- اكتب بين 1800 و2500 كلمة.
+
+أرجع النتيجة بصيغة JSON فقط.
+
+ويجب أن يحتوي JSON على:
+
+title
+seo_title
+slug
+meta_description
+category
+tags
+keywords
+article
+
+داخل article:
+
+- مقدمة
+- H2
+- H3
+- جدول إذا احتاج
+- FAQ
+- خاتمة
+- لا تستخدم Markdown.
+- استخدم HTML فقط مثل:
+<h2>
+<h3>
+<p>
+<ul>
+<li>
+
+لا تضف أي كلام خارج JSON.
 """
 
     return f"""
 You are a professional SEO writer.
 
-Write a unique English article based on:
+Write a unique human-quality article.
+
+Topic:
 
 Title:
 {topic["title"]}
@@ -72,21 +103,36 @@ Summary:
 Source:
 {topic["source"]}
 
-Link:
-{topic["link"]}
-
 Requirements:
 
-- SEO Title
-- Meta Description
-- URL Slug
-- 1500-2500 words
-- H2/H3 headings
-- FAQ
-- Conclusion
-- Do not copy the source.
+- 1800-2500 words.
+- Human writing.
+- No plagiarism.
+- SEO optimized.
 - Return JSON only.
 
+JSON must contain:
+
+title
+seo_title
+slug
+meta_description
+category
+tags
+keywords
+article
+
+The article must include:
+
+- Introduction
+- H2
+- H3
+- FAQ
+- Conclusion
+
+Use HTML tags only.
+
+Return JSON only.
 """
 # ==========================================
 # GENERATE ARTICLE
