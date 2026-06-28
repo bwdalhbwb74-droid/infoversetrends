@@ -323,8 +323,8 @@ async def button_handler(
 
         if query.data == "preview":
 
-    await query.edit_message_text(
-   "👀 جاري إنشاء صفحة المعاينة..."
+         await query.edit_message_text(
+      "👀 جاري إنشاء صفحة المعاينة..."
     )
 
     preview_url = publish_preview(
