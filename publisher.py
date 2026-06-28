@@ -323,19 +323,27 @@ async def button_handler(
 
     if query.data == "preview":
 
-        article = LAST_ARTICLE.get(
-            "article",
-            ""
-        )
+    await query.edit_message_text(
+        "👀 جاري إنشاء صفحة المعاينة..."
+    )
 
-        if len(article) > 3500:
-            article = article[:3500] + "\n\n..."
+    preview_url = publish_preview(
+        LAST_ARTICLE
+    )
+
+    if preview_url:
 
         await query.message.reply_text(
-            article
+            f"👀 معاينة المقال جاهزة:\n\n{preview_url}"
         )
 
-        return
+    else:
+
+        await query.message.reply_text(
+            "❌ فشل إنشاء صفحة المعاينة."
+        )
+
+    return
         if query.data == "publish":
 
             await query.edit_message_text(
