@@ -209,7 +209,7 @@ async def receive_message(
 
         LAST_ARTICLE = article
         
-                keyboard = InlineKeyboardMarkup(
+        keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
