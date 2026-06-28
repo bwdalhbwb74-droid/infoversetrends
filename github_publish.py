@@ -82,7 +82,7 @@ def build_html(article):
         "{{LANGUAGE}}",
         "Arabic"
     )
-        html = html.replace(
+    html = html.replace(
         "{{IMAGE}}",
         article.get(
             "image",
