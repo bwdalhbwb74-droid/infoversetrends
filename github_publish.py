@@ -173,8 +173,7 @@ def publish_article(article):
         path=f"articles/{slug}.html",
         content=html,
         message=f"Publish article: {article['title']}"
-    )
-
+      )
     return success
 
 # ==========================================
