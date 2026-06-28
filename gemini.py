@@ -169,9 +169,11 @@ def generate_article(topic):
 
         text = response.text.strip()
 
-        print("=" * 50)
-        print(text)
-        print("=" * 50)
+        print("=" * 80)
+        print("RAW GEMINI RESPONSE")
+        print("=" * 80)
+        print(repr(text))
+        print("=" * 80)
         
         # إزالة Markdown إذا أضافه Gemini
 
