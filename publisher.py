@@ -246,7 +246,8 @@ await update.message.reply_text(
     "✅ تم إنشاء المقال بنجاح.\n\nاختر ما تريد:",
     reply_markup=keyboard
 )
-  return
+
+return
 # ==========================================
 # PUBLISH / EDIT COMMANDS
 # ==========================================
