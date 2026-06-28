@@ -37,6 +37,7 @@ from gemini import (
 
 from github_publish import (
     publish_article,
+    publish_preview,
 )
 
 # ==========================================
