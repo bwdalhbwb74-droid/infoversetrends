@@ -11,7 +11,7 @@ from config import (
 
 GITHUB_OWNER = "infoversehub"
 
-GITHUB_REPO = "infoverse-hub"
+GITHUB_REPO = "infoversetrends"
 
 BRANCH = "main"
 
