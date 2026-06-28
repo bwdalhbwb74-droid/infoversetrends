@@ -135,6 +135,7 @@ meta_description
 category
 tags
 keywords
+image_keywords
 article
 
 The article must include:
@@ -144,6 +145,15 @@ The article must include:
 - H3
 - FAQ
 - Conclusion
+
+Image requirements:
+
+- Generate exactly 4 English image search keywords.
+- The first keyword is for the hero image.
+- The second keyword matches the first H2 section.
+- The third keyword matches the second H2 section.
+- The fourth keyword matches the third H2 section.
+- Return them inside image_keywords as an array.
 
 Use HTML tags only.
 
