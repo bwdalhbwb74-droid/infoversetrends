@@ -77,7 +77,7 @@ async def send_daily_topics(
     print("✅ Daily topics sent.")
 
 # ==========================================
-# START
+# START COMMAND
 # ==========================================
 
 async def start_command(
@@ -100,7 +100,7 @@ async def post_init(
 
     await application.bot.send_message(
         chat_id=CHAT_ID,
-        text="🚀 Bot Started\n\n⏳ جاري جلب المواضيع..."
+        text="🚀 Bot Started\n\n⏳ جاري جلب مواضيع اليوم..."
     )
 
     application.job_queue.run_daily(
@@ -122,8 +122,9 @@ async def post_init(
         )()
     )
 
-    print("✅ Started")
-    # ==========================================
+    print("✅ JobQueue Started")
+
+# ==========================================
 # RECEIVE MESSAGE
 # ==========================================
 
@@ -138,8 +139,7 @@ async def receive_message(
         return
 
     text = update.message.text.strip()
-
-    # ==========================================
+        # ==========================================
     # SELECT TOPIC
     # ==========================================
 
@@ -164,9 +164,7 @@ async def receive_message(
         for topic in topics:
 
             if topic["number"] == number:
-
                 selected = topic
-
                 break
 
         if selected is None:
@@ -192,7 +190,7 @@ async def receive_message(
 
         await update.message.reply_text(
             "⏳ جاري كتابة المقال...\n"
-            "قد يستغرق دقيقة..."
+            "قد يستغرق دقيقة أو دقيقتين."
         )
 
         result = create_article(
@@ -210,7 +208,7 @@ async def receive_message(
         article = result["data"]
 
         LAST_ARTICLE = article
-        keyboard = InlineKeyboardMarkup(
+                keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
@@ -242,15 +240,23 @@ async def receive_message(
 
         return
 
+    # ==========================================
+    # TEXT COMMANDS
+    # ==========================================
+
     if text.lower() == "انشر":
 
         if LAST_ARTICLE is None:
 
             await update.message.reply_text(
-                "❌ لا يوجد مقال."
+                "❌ لا يوجد مقال للنشر."
             )
 
             return
+
+        await update.message.reply_text(
+            "🚀 جاري النشر على GitHub..."
+        )
 
         success = publish_article(
             LAST_ARTICLE
@@ -259,7 +265,7 @@ async def receive_message(
         if success:
 
             await update.message.reply_text(
-                "✅ تم النشر على GitHub."
+                "✅ تم نشر المقال بنجاح."
             )
 
         else:
@@ -269,8 +275,7 @@ async def receive_message(
             )
 
         return
-        
-        if text.lower() == "عدل":
+            if text.lower() == "عدل":
 
         if LAST_ARTICLE is None:
 
@@ -281,17 +286,17 @@ async def receive_message(
             return
 
         await update.message.reply_text(
-            "✏️ ميزة التعديل قريباً."
+            "✏️ ميزة التعديل سيتم إضافتها قريباً."
         )
 
         return
 
     await update.message.reply_text(
-        "❌ أرسل رقم موضوع."
+        "❌ أرسل رقم موضوع أو اكتب (انشر)."
     )
 
 # ==========================================
-# BUTTONS
+# BUTTON HANDLER
 # ==========================================
 
 async def button_handler(
@@ -315,13 +320,24 @@ async def button_handler(
 
     if query.data == "preview":
 
+        article = LAST_ARTICLE.get(
+            "article",
+            ""
+        )
+
+        if len(article) > 3500:
+            article = article[:3500] + "\n\n..."
+
         await query.message.reply_text(
-            LAST_ARTICLE["article"][:3500]
+            article
         )
 
         return
+            if query.data == "publish":
 
-    if query.data == "publish":
+        await query.edit_message_text(
+            "🚀 جاري النشر على GitHub..."
+        )
 
         success = publish_article(
             LAST_ARTICLE
@@ -329,14 +345,20 @@ async def button_handler(
 
         if success:
 
-            await query.edit_message_text(
-                "✅ تم نشر المقال."
+            slug = LAST_ARTICLE.get(
+                "slug",
+                ""
+            )
+
+            await query.message.reply_text(
+                "✅ تم نشر المقال بنجاح.\n\n"
+                f"📄 articles/{slug}.html"
             )
 
         else:
 
-            await query.edit_message_text(
-                "❌ فشل النشر."
+            await query.message.reply_text(
+                "❌ فشل النشر على GitHub."
             )
 
         return
@@ -344,11 +366,12 @@ async def button_handler(
     if query.data == "edit":
 
         await query.edit_message_text(
-            "✏️ قريباً..."
+            "✏️ ميزة التعديل سيتم إضافتها قريباً."
         )
 
         return
-        # ==========================================
+
+# ==========================================
 # HANDLERS
 # ==========================================
 
@@ -371,7 +394,6 @@ application.add_handler(
         button_handler
     )
 )
-
 # ==========================================
 # MAIN
 # ==========================================
@@ -388,45 +410,10 @@ def main():
         allowed_updates=Update.ALL_TYPES,
         drop_pending_updates=True
     )
-    # ==========================================
-# HANDLERS
-# ==========================================
-
-application.add_handler(
-    CommandHandler(
-        "start",
-        start_command
-    )
-)
-
-application.add_handler(
-    MessageHandler(
-        filters.TEXT & ~filters.COMMAND,
-        receive_message
-    )
-)
-
-application.add_handler(
-    CallbackQueryHandler(
-        button_handler
-    )
-)
 
 # ==========================================
-# MAIN
+# ENTRY POINT
 # ==========================================
 
-def main():
-
-    application.post_init = post_init
-
-    print("=" * 50)
-    print("InfoVerse Hub Started")
-    print("=" * 50)
-
-    application.run_polling(
-        allowed_updates=Update.ALL_TYPES,
-        drop_pending_updates=True
-    )
-    if __name__ == "__main__":
+if __name__ == "__main__":
     main()
