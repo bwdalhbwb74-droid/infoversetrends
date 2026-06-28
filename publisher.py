@@ -252,7 +252,7 @@ return
 # PUBLISH / EDIT COMMANDS
 # ==========================================
 
-    if text.lower() == "انشر":
+if text.lower() == "انشر":
 
         if LAST_ARTICLE is None:
 
