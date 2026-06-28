@@ -269,7 +269,8 @@ async def receive_message(
             )
 
         return
-            if text.lower() == "عدل":
+        
+        if text.lower() == "عدل":
 
         if LAST_ARTICLE is None:
 
