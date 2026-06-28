@@ -321,7 +321,7 @@ async def button_handler(
 
         return
 
-    if query.data == "preview":
+        if query.data == "preview":
 
     await query.edit_message_text(
         "👀 جاري إنشاء صفحة المعاينة..."
