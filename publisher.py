@@ -212,13 +212,13 @@ async def receive_message(
 
         article = result["data"]
 
-images = get_images(
-    selected["title"]
-)
+        images = get_images(
+        selected["title"]
+       )
 
-article["images"] = images
+        article["images"] = images
 
-LAST_ARTICLE = article
+        LAST_ARTICLE = article
         
         keyboard = InlineKeyboardMarkup(
             [
