@@ -347,33 +347,33 @@ async def button_handler(
     
     if query.data == "publish":
 
-            await query.edit_message_text(
-            "🚀 جاري النشر على GitHub..."
+    await query.edit_message_text(
+        "🚀 جاري النشر على GitHub..."
+    )
+
+    success = publish_article(
+        LAST_ARTICLE
+    )
+
+    if success:
+
+        slug = LAST_ARTICLE.get(
+            "slug",
+            ""
         )
 
-           success = publish_article(
-            LAST_ARTICLE
+        await query.message.reply_text(
+            f"✅ تم نشر المقال بنجاح.\n\n"
+            f"📄 articles/{slug}.html"
         )
 
-        if success:
+    else:
 
-            slug = LAST_ARTICLE.get(
-                "slug",
-                ""
-            )
+        await query.message.reply_text(
+            "❌ فشل النشر على GitHub."
+        )
 
-            await query.message.reply_text(
-                f"✅ تم نشر المقال بنجاح.\n\n"
-                f"📄 articles/{slug}.html"
-            )
-
-        else:
-
-            await query.message.reply_text(
-                "❌ فشل النشر على GitHub."
-            )
-
-        return
+    return
     if query.data == "edit":
 
         await query.edit_message_text(
