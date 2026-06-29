@@ -331,60 +331,59 @@ async def button_handler(
 
         return
 
-        if query.data == "preview":
+    if query.data == "preview":
 
-         await query.edit_message_text(
-      "👀 جاري إنشاء صفحة المعاينة..."
-    )
-
-    preview_url = publish_preview(
-        LAST_ARTICLE
-    )
-
-    if preview_url:
-
-        await query.message.reply_text(
-          f"👀 معاينة المقال جاهزة:\n\n{preview_url}"
+        await query.edit_message_text(
+            "👀 جاري إنشاء صفحة المعاينة..."
         )
 
-    else:
-
-        await query.message.reply_text(
-            "❌ فشل إنشاء صفحة المعاينة."
+        preview_url = publish_preview(
+            LAST_ARTICLE
         )
 
-    return
-    
+        if preview_url:
+
+            await query.message.reply_text(
+                f"👀 معاينة المقال جاهزة:\n\n{preview_url}"
+            )
+
+        else:
+
+            await query.message.reply_text(
+                "❌ فشل إنشاء صفحة المعاينة."
+            )
+
+        return
+
     if query.data == "publish":
 
-         await query.edit_message_text(
-        "🚀 جاري النشر على GitHub..."
-    )
-
-    success = publish_article(
-        LAST_ARTICLE
-    )
-
-    if success:
-
-        slug = LAST_ARTICLE.get(
-            "slug",
-            ""
+        await query.edit_message_text(
+            "🚀 جاري النشر على GitHub..."
         )
 
-        await query.message.reply_text(
-            f"✅ تم نشر المقال بنجاح.\n\n"
-            f"📄 articles/{slug}.html"
+        success = publish_article(
+            LAST_ARTICLE
         )
 
-    else:
+        if success:
 
-        await query.message.reply_text(
-            "❌ فشل النشر على GitHub."
-        )
+            slug = LAST_ARTICLE.get(
+                "slug",
+                ""
+            )
 
-    return
-    
+            await query.message.reply_text(
+                f"✅ تم نشر المقال بنجاح.\n\n📄 articles/{slug}.html"
+            )
+
+        else:
+
+            await query.message.reply_text(
+                "❌ فشل النشر."
+            )
+
+        return
+
     if query.data == "edit":
 
         await query.edit_message_text(
