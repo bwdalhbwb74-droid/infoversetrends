@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 
 from github import (
     upload_file,
@@ -184,21 +185,21 @@ def publish_article(article):
 # ==========================================
 
 def publish_preview(article):
-    html = build_html(
-        article
-    )
-    slug = article.get(
-        "slug",
-        "preview"
-    )
+
+    html = build_html(article)
+
+    filename = f"preview-{int(time.time())}.html"
+
     success = upload_file(
-        path=f"preview/{slug}.html",
+        path=f"preview/{filename}",
         content=html,
         message=f"Preview: {article['title']}"
     )
+
     if not success:
         return None
+
     return (
-        "https://infoversehub.github.io/"
-        f"infoversetrends/preview/{slug}.html"
+        f"https://infoversehub.github.io/"
+        f"infoversetrends/preview/{filename}"
     )
