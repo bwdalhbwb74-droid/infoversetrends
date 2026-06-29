@@ -142,8 +142,8 @@ def build_html(article):
 
     images_html = ""
 
-for image in article.get("images", []):
-    images_html += f"""
+    for image in article.get("images", []):
+        images_html += f"""
     <figure class="article-image">
         <img src="{image['url']}"
              alt="{image.get('alt', article['title'])}"
@@ -151,10 +151,10 @@ for image in article.get("images", []):
     </figure>
     """
 
-html = html.replace(
-    "{{IMAGES}}",
-    images_html
-)
+    html = html.replace(
+        "{{IMAGES}}",
+        images_html
+   )
     
     return html
 
