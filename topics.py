@@ -1,38 +1,25 @@
 """
 InfoVerse Hub V2
-Topics Collector
+Topics Manager
 """
 
 import json
 
+from rss import fetch_all_feeds
+from filter import filter_articles
+from ranking import get_top_articles
 
-def collect_topics():
-    """
-    Collect today's topics.
-    """
 
-    print("Collecting topics...")
-
-    topics = []
-
-    # TODO:
-    # Read RSS sources
-    # Fetch articles
-    # Remove duplicates
-    # Rank topics
-    # Select top 10
-
-    save_topics(topics)
-
-    return topics
+TOPICS_FILE = "topics.json"
 
 
 def save_topics(topics):
     """
-    Save topics into topics.json
+    Save topics to JSON.
     """
 
-    with open("topics.json", "w", encoding="utf-8") as file:
+    with open(TOPICS_FILE, "w", encoding="utf-8") as file:
+
         json.dump(
             {
                 "count": len(topics),
@@ -43,4 +30,45 @@ def save_topics(topics):
             indent=4
         )
 
-    print(f"{len(topics)} topics saved.")
+
+def load_topics():
+    """
+    Load topics from JSON.
+    """
+
+    try:
+
+        with open(TOPICS_FILE, "r", encoding="utf-8") as file:
+
+            return json.load(file)
+
+    except FileNotFoundError:
+
+        return {
+            "count": 0,
+            "topics": []
+        }
+
+
+def collect_topics():
+    """
+    Collect today's topics.
+    """
+
+    print("Fetching RSS feeds...")
+
+    articles = fetch_all_feeds()
+
+    print(f"Fetched {len(articles)} articles.")
+
+    articles = filter_articles(articles)
+
+    print(f"{len(articles)} articles after filtering.")
+
+    topics = get_top_articles(articles, 10)
+
+    save_topics(topics)
+
+    print(f"Saved {len(topics)} topics.")
+
+    return topics
