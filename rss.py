@@ -49,23 +49,26 @@ def fetch_all_feeds():
 
     all_articles = []
 
-    for category, feeds in sources.items():
+    for language, categories in sources.items():
 
-        for url in feeds:
+        for category, feeds in categories.items():
 
-            try:
+            for url in feeds:
 
-                articles = fetch_feed(url)
+                try:
 
-                for article in articles:
+                    articles = fetch_feed(url)
 
-                    article["category"] = category
+                    for article in articles:
 
-                    all_articles.append(article)
+                        article["language"] = language
+                        article["category"] = category
 
-            except Exception as error:
+                        all_articles.append(article)
 
-                print(f"RSS Error: {url}")
-                print(error)
+                except Exception as error:
+
+                    print(f"RSS Error: {url}")
+                    print(error)
 
     return all_articles
