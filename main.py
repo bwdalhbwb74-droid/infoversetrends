@@ -14,8 +14,7 @@ def main():
     print("=" * 50)
 
     collect_topics()
-
-    from topics import collect_topics
+from topics import collect_topics
 
 collect_topics()
     
