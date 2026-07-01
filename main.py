@@ -15,6 +15,10 @@ def main():
 
     collect_topics()
 
+    from topics import collect_topics
+
+collect_topics()
+    
     start_bot()
 
 
