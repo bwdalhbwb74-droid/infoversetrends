@@ -60,6 +60,37 @@ async def topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
             english.append(topic)
 
     number = 1
+        for topic in arabic:
+
+        message += (
+            f"{number}️⃣ {topic['category']}\n"
+            f"📰 {topic['title']}\n\n"
+        )
+
+        number += 1
+
+    message += "━━━━━━━━━━━━━━\n\n"
+
+    message += "🌍 <b>المواضيع الإنجليزية</b>\n\n"
+
+    for topic in english:
+
+        message += (
+            f"{number}️⃣ {topic['category']}\n"
+            f"📰 {topic['title']}\n\n"
+        )
+
+        number += 1
+            message += "━━━━━━━━━━━━━━\n\n"
+
+    message += (
+        "📩 <b>أرسل رقم الموضوع لبدء كتابة المقال.</b>"
+    )
+
+    await update.message.reply_text(
+        message,
+        parse_mode="HTML"
+    )
 
 
 async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
