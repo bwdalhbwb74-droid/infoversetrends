@@ -5,7 +5,8 @@ RSS Reader
 
 import json
 import feedparser
-
+import re
+from html import unescape
 
 RSS_FILE = "rss_sources.json"
 
@@ -18,6 +19,21 @@ def load_sources():
     with open(RSS_FILE, "r", encoding="utf-8") as file:
         return json.load(file)
 
+def clean_html(text):
+    """
+    Remove HTML tags from RSS content.
+    """
+
+    if not text:
+        return ""
+
+    text = unescape(text)
+
+    text = re.sub(r"<[^>]+>", "", text)
+
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
 
 def fetch_feed(url):
     """
@@ -31,8 +47,8 @@ def fetch_feed(url):
     for item in feed.entries:
 
         articles.append({
-            "title": item.get("title", "").strip(),
-            "summary": item.get("summary", "").strip(),
+            "title": clean_html(item.get("title", "")),
+            "summary": clean_html(item.get("summary", "")),
             "link": item.get("link", "").strip(),
             "published": item.get("published", "").strip(),
         })
