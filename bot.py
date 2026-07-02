@@ -40,14 +40,26 @@ async def topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    message = "📰 مواضيع اليوم\n\n"
+    message = "🔥 <b>مواضيع اليوم</b>\n\n"
 
-    for index, topic in enumerate(data["topics"], start=1):
-        message += f"{index}. {topic['title']}\n"
+    message += "━━━━━━━━━━━━━━\n\n"
 
-    message += "\n📩 أرسل رقم الموضوع."
+    message += "🇸🇦 <b>المواضيع العربية</b>\n\n"
 
-    await update.message.reply_text(message)
+    arabic = []
+    english = []
+
+    for topic in data["topics"]:
+
+        if topic.get("language") == "arabic":
+
+            arabic.append(topic)
+
+        else:
+
+            english.append(topic)
+
+    number = 1
 
 
 async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
