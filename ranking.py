@@ -83,13 +83,31 @@ def rank_articles(articles):
     )
 
     return articles
-
+    
 
 def get_top_articles(articles, limit=10):
     """
-    Return top articles.
+    Return one best article from every category.
     """
 
     ranked = rank_articles(articles)
 
-    return ranked[:limit]
+    selected = []
+    used_categories = set()
+
+    for article in ranked:
+
+        category = article["category"]
+
+        if category in used_categories:
+            continue
+
+        selected.append(article)
+        used_categories.add(category)
+
+        if len(selected) >= limit:
+            break
+
+    return selected
+
+
