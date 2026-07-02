@@ -60,7 +60,8 @@ async def topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
             english.append(topic)
 
     number = 1
-        for topic in arabic:
+    
+    for topic in arabic:
 
         message += (
             f"{number}️⃣ {topic['category']}\n"
