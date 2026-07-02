@@ -14,7 +14,7 @@ from telegram.ext import (
 
 from config import BOT_TOKEN
 from topics import load_topics
-
+from prompts import arabic_prompt, english_prompt
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
@@ -118,15 +118,14 @@ async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         topic = topics[index]
 
-        message = (
-            f"📰 {topic['title']}\n\n"
-            f"📂 التصنيف: {topic['category']}\n\n"
-            f"📝 الملخص:\n{topic['summary']}\n\n"
-            f"🔗 المصدر:\n{topic['link']}"
-        )
+        if topic["language"] == "arabic":
+            prompt = arabic_prompt(topic)
+        else:
+            prompt = english_prompt(topic)
 
-        await update.message.reply_text(message)
+        await update.message.reply_text(prompt)
         return
+        
 
     # أي رسالة ليست رقم تعتبر مقالاً (سنضيف معالجتها لاحقاً)
     await update.message.reply_text(
