@@ -82,7 +82,8 @@ async def topics(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         number += 1
-            message += "━━━━━━━━━━━━━━\n\n"
+        
+    message += "━━━━━━━━━━━━━━\n\n"
 
     message += (
         "📩 <b>أرسل رقم الموضوع لبدء كتابة المقال.</b>"
