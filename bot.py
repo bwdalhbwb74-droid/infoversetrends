@@ -15,6 +15,7 @@ from telegram.ext import (
 from config import BOT_TOKEN
 from topics import load_topics
 from prompts import arabic_prompt, english_prompt
+from io import BytesIO
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
@@ -123,7 +124,14 @@ async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             prompt = english_prompt(topic)
 
-        await update.message.reply_text(prompt)
+        buffer = BytesIO(prompt.encode("utf-8"))
+        buffer.name = "article_prompt.txt"
+
+        await update.message.reply_document(
+            document=buffer,
+            caption="📄 هذا هو البرومبت الجاهز.\n\nانسخه بالكامل وأرسله إلى ChatGPT."
+        )
+
         return
         
 
